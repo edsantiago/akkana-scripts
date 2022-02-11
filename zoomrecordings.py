@@ -13,6 +13,7 @@
 import requests
 import os
 import subprocess
+import sys
 
 # Get the JWT token from the environment
 JWT_TOKEN = os.environ["ZOOM_JWT_TOKEN"]
@@ -29,7 +30,8 @@ def show_zoom_recordings():
                      headers=AUTHORIZATION_HEADER)
     j = r.json()
 
-    print(len(j["meetings"]), "meetings:")
+    if len(j["meetings"]) > 0:
+        print(len(j["meetings"]), "meetings:")
     for m in j["meetings"]:
         print()
         print(m["topic"], m["start_time"])
@@ -60,4 +62,7 @@ def prettysize(nbytes):
 
 
 if __name__ == '__main__':
+    # First (and only) argument is a base directory into which to download
+    if len(sys.argv) == 1:
+        os.chdir(sys.argv[1])
     show_zoom_recordings()
