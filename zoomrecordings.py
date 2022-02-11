@@ -12,7 +12,7 @@
 
 import requests
 import os
-
+import subprocess
 
 # Get the JWT token from the environment
 JWT_TOKEN = os.environ["ZOOM_JWT_TOKEN"]
@@ -34,6 +34,10 @@ def show_zoom_recordings():
         print()
         print(m["topic"], m["start_time"])
 
+        # e.g., "2022-01-20T18:44:47Z/LWVLA Lunch with a Leader"
+        subdir = os.path.join(m["start_time"], m["topic"])
+        os.makedirs(subdir, mode=0o755, exist_ok=True)
+
         # Get URLs for the download URLs for that meeting
         for recording in m['recording_files']:
             print("    %s (%s): %s?access_token=%s"
@@ -41,6 +45,11 @@ def show_zoom_recordings():
                      prettysize(recording['file_size']),
                      recording['download_url'],
                      JWT_TOKEN))
+
+            # E.g., zoom.mp4, zoom.m4a, zoom.txt
+            filepath = os.path.join(subdir, "zoom."+recording["file_extension"].lower())
+            if not os.path.exists(filepath):
+                subprocess.call(["yt-dlp", "-o", filepath, recording["download_url"]+"?access_token="+JWT_TOKEN], shell=False)
 
 
 def prettysize(nbytes):
