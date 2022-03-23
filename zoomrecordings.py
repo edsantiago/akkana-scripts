@@ -30,8 +30,8 @@ def show_zoom_recordings():
                      headers=AUTHORIZATION_HEADER)
     j = r.json()
 
-    if len(j["meetings"]) > 0:
-        print(len(j["meetings"]), "meetings:")
+#    if len(j["meetings"]) > 0:
+#        print(len(j["meetings"]), "meetings:")
     for m in j["meetings"]:
         print()
         print(m["topic"], m["start_time"])
@@ -42,15 +42,14 @@ def show_zoom_recordings():
 
         # Get URLs for the download URLs for that meeting
         for recording in m['recording_files']:
-            print("    %s (%s): %s?access_token=%s"
-                  % (recording['file_type'],
-                     prettysize(recording['file_size']),
-                     recording['download_url'],
-                     JWT_TOKEN))
-
             # E.g., zoom.mp4, zoom.m4a, zoom.txt
             filepath = os.path.join(subdir, "zoom."+recording["file_extension"].lower())
             if not os.path.exists(filepath):
+                print("    %s (%s): %s?access_token=%s"
+                          % (recording['file_type'],
+                                 prettysize(recording['file_size']),
+                                 recording['download_url'],
+                                 JWT_TOKEN))
                 subprocess.call(["yt-dlp", "-o", filepath, recording["download_url"]+"?access_token="+JWT_TOKEN], shell=False)
 
 
