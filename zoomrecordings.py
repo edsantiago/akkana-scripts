@@ -43,14 +43,23 @@ def show_zoom_recordings():
         # Get URLs for the download URLs for that meeting
         for recording in m['recording_files']:
             # E.g., zoom.mp4, zoom.m4a, zoom.txt
-            filepath = os.path.join(subdir, "zoom."+recording["file_extension"].lower())
+            ext = recording["file_extension"].lower()
+            filepath = os.path.join(subdir, "zoom."+ext)
             if not os.path.exists(filepath):
                 print("    %s (%s): %s?access_token=%s"
                           % (recording['file_type'],
                                  prettysize(recording['file_size']),
                                  recording['download_url'],
                                  JWT_TOKEN))
-                subprocess.call(["yt-dlp", "-o", filepath, recording["download_url"]+"?access_token="+JWT_TOKEN], shell=False)
+
+                url = recording["download_url"]
+                if ext in ['txt', 'vtt']:
+                    r1 = requests.get(url, headers=AUTHORIZATION_HEADER)
+                    with open(filepath, "wb") as outfile:
+                        outfile.write(r1.content)
+                    os.chmod(filepath, 0o444)
+                else:
+                    subprocess.call(["yt-dlp", "-o", filepath, url+"?access_token="+JWT_TOKEN], shell=False)
 
 
 def prettysize(nbytes):
